@@ -1,1 +1,1 @@
-# Caloery_tracker
+# Calorie_tracker
