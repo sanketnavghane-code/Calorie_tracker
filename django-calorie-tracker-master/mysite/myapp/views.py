@@ -7,7 +7,6 @@ from .models import Food, Consume
 def index(request):
 
     if request.method == "POST":
-        # Use .get to avoid MultiValueDictKeyError when the field is missing
         food_consumed = request.POST.get('food_consumed')
         quantity = request.POST.get('quantity', 1.0)
         try:
@@ -19,7 +18,7 @@ def index(request):
                 food_obj = Food.objects.get(name=food_consumed)
             except Food.DoesNotExist:
                 food_obj = None
-            # Only allow creating a consumption record for authenticated users
+            
             if request.user.is_authenticated and food_obj is not None:
                 consume = Consume(user=request.user, food_consumed=food_obj, date=timezone.now().date(), quantity=quantity)
                 consume.save()
