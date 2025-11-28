@@ -22,11 +22,11 @@ def index(request):
             if request.user.is_authenticated and food_obj is not None:
                 consume = Consume(user=request.user, food_consumed=food_obj, date=timezone.now().date(), quantity=quantity)
                 consume.save()
-        # After POST, redirect to avoid form resubmission when refreshing
+                
         return redirect('/')
 
     foods = Food.objects.all()
-    # If the visitor is authenticated, show their consumed food for today; otherwise none
+   
     if request.user.is_authenticated:
         consumed_food = Consume.objects.filter(user=request.user, date=timezone.now().date())
     else:
