@@ -1,0 +1,44 @@
+from django.shortcuts import render, redirect
+from django.utils import timezone
+from .models import Food, Consume
+# Create your views here.
+
+
+def index(request):
+
+    if request.method == "POST":
+        # Use .get to avoid MultiValueDictKeyError when the field is missing
+        food_consumed = request.POST.get('food_consumed')
+        quantity = request.POST.get('quantity', 1.0)
+        try:
+            quantity = float(quantity)
+        except ValueError:
+            quantity = 1.0
+        if food_consumed:
+            try:
+                food_obj = Food.objects.get(name=food_consumed)
+            except Food.DoesNotExist:
+                food_obj = None
+            # Only allow creating a consumption record for authenticated users
+            if request.user.is_authenticated and food_obj is not None:
+                consume = Consume(user=request.user, food_consumed=food_obj, date=timezone.now().date(), quantity=quantity)
+                consume.save()
+        # After POST, redirect to avoid form resubmission when refreshing
+        return redirect('/')
+
+    foods = Food.objects.all()
+    # If the visitor is authenticated, show their consumed food for today; otherwise none
+    if request.user.is_authenticated:
+        consumed_food = Consume.objects.filter(user=request.user, date=timezone.now().date())
+    else:
+        consumed_food = Consume.objects.none()
+
+    return render(request, 'myapp/index.html', {'foods': foods, 'consumed_food': consumed_food})
+
+
+def delete_consume(request, id):
+    consumed_food = Consume.objects.get(id=id)
+    if request.method == 'POST':
+        consumed_food.delete()
+        return redirect('/')
+    return render(request, 'myapp/delete.html')
